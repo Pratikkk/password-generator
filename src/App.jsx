@@ -18,21 +18,26 @@ function App() {
   const passwordRef = useRef(null);
 
   const generatePassword = useCallback(() => {
-    const generateRandomString = (length) => {
+    
+    const generateRandomString = (length) => {  
       let result = '';
-      const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+      let characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
       if (numberAllowed) characters += '0123456789';
       if (characterAllowed) characters += '!@#$%^&*()_+';
-      const charactersLength = characters.length;
+      let charactersLength = characters.length;
       for (let i = 0; i < length; i++) {
         result += characters.charAt(Math.floor(Math.random() * charactersLength));
       }
       return result;
     };
+    const generatedPassword = generateRandomString(8);
+    setPassword(generatedPassword);
     const pass = generateRandomString(length);
     setPassword(pass);
     setButtonText("Copy");
   }, [length, numberAllowed, characterAllowed, setPassword]);
+
+  
 
   const copyPasswordToClipboard = useCallback(() => {
     if (passwordRef.current) {
@@ -49,7 +54,7 @@ function App() {
 
   return (
     <>
-      <div className='fonts-poppins flex justify-center items-center flex-col py-8 content-center'>
+      <div className='h-screen dark:bg-slate-800 max-h-md dark:text-white fonts-poppins flex justify-center items-center flex-col py-8 content-center'>
         <div className='w-full max-w-md mx-auto shadow-md rounded-lg px-5 py-7 text-cyan-500 '>
           <input
             type='text'
@@ -66,6 +71,7 @@ function App() {
         >
           {buttonText}
         </button>
+        <button className='px-4 py-2 bg-cyan-500 text-white shrink-0 my-4 rounded-md hover:bg-cyan-700 hover:scale-150 active:bg-cyan-700 focus:outline-none focus:ring focus:ring-cyan-300 ease-out duration-300' onClick={generatePassword}>Randomize</button>
         <div className='flex text-sm gap-x-2'>
           <div className='flex items-center gap-x-1'>
             <input
