@@ -1,4 +1,6 @@
 import React, { useState, useRef, useEffect, useCallback } from "react";
+import { Tooltip } from "react-tooltip";
+import zxcvbn from "zxcvbn";
 
 function App() {
   const [length, setLength] = useState(8);
@@ -6,6 +8,7 @@ function App() {
   const [characterAllowed, setCharacterAllowed] = useState(false);
   const [password, setPassword] = useState("");
   const [buttonText, setButtonText] = useState("Copy");
+  const [passwordStrength, setPasswordStrength] = useState({score: 0, feedback: []});
 
   const passwordRef = useRef(null);
 
@@ -29,6 +32,9 @@ function App() {
     const pass = generateRandomString(length);
     setPassword(pass);
     setButtonText("Copy");
+
+    const strength = calculatePasswordStrength(pass);
+    setPasswordStrength(strength);
   }, [length, numberAllowed, characterAllowed, setPassword]);
 
   const copyPasswordToClipboard = useCallback(() => {
@@ -39,6 +45,28 @@ function App() {
       setButtonText("Copied !");
     }
   }, [password]);
+
+  const calculatePasswordStrength = (password) => {
+    const  result  = zxcvbn(password);
+    return {
+      score: result.score,
+      feedback: result.feedback.suggestions,
+      
+    }
+  };
+  const getStrengthText = (score) => {
+    if (score === 0) {
+      return "Very Weak";
+    } else if (score === 1) {
+      return "Weak";
+    } else if (score === 2) {
+      return "Medium";
+    } else if (score === 3) {
+      return "Strong";
+    } else {
+      return "Very Strong";
+    }
+  }
 
   useEffect(() => {
     generatePassword();
@@ -56,6 +84,10 @@ function App() {
             className='w-full border-2 border-cyan-500 py-4 px-4 shrink-0 rounded-md focus:outline-none focus:ring focus:ring-cyan-300 ease-out duration-300'
             ref={passwordRef}
           />
+          <div className="mt-4">
+            <p className="text-lg font-semibold text-cyan-600">Password Strength: {getStrengthText(passwordStrength.score)}</p>
+            <ul className="mt-2">{passwordStrength.feedback.map((message, index) => <li key={index}>{message}</li>)}</ul>
+          </div>
         </div>
         <button
           onClick={copyPasswordToClipboard}
@@ -81,6 +113,7 @@ function App() {
             />
             <label htmlFor='length'>Length: {length}</label>
           </div>
+          
           <div className='flex items-center gap-x-1'>
             <input
               className='form-checkbox h-5 w-5 text-cyan-500 transition duration-150 ease-in-out rounded-md focus:ring-cyan-500'
