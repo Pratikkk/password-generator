@@ -1,70 +1,147 @@
-import React, { useState, useEffect, useCallback } from 'react';
-import PasswordGenerator from './components/PasswordGenerator';
-import PasswordStrengthIndicator from './components/PasswordStrengthIndicator';
+import React, { useState, useRef, useEffect, useCallback } from "react";
+import  zxcvbn  from "zxcvbn";
+
+import PasswordGenerator from "./components/PasswordGenerator";
+import PasswordStrengthMeter from "./components/PasswordStrengthMeter";
+import CopyToClipboardButton from "./components/CopyToClipboardButton";
+import RandomizeButton from "./components/RandomizeButton";
 
 function App() {
-  const [length, setLength] = useState(12);
-  const [numberAllowed, setNumberAllowed] = useState(true);
-  const [characterAllowed, setCharacterAllowed] = useState(true);
-  const [password, setPassword] = useState('');
-  const [passwordStrength, setPasswordStrength] = useState(0);
+  const [length, setLength] = useState(8);
+  const [numberAllowed, setNumberAllowed] = useState(0);
+  const [characterAllowed, setCharacterAllowed] = useState(false);
+  const [password, setPassword] = useState("");
+  const [buttonText, setButtonText] = useState("Copy");
+  const [passwordStrength, setPasswordStrength] = useState({
+    score: 0,
+    feedback: [],
+  });
+
+  const passwordRef = useRef(null);
 
   const generatePassword = useCallback(() => {
-    let charset = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
-    if (numberAllowed) charset += '0123456789';
-    if (characterAllowed) charset += '!@#$%^&*()';
+    const generateRandomString = (length) => {
+      let result = "";
+      let characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+      if (numberAllowed) characters += "0123456789";
+      if (characterAllowed) characters += "!@#$%^&*()_+";
+      let charactersLength = characters.length;
+      for (let i = 0; i < length; i++) {
+        result += characters.charAt(Math.floor(Math.random() * charactersLength));
+      }
+      return result;
+    };
 
-    let generatedPassword = '';
-    for (let i = 0; i < length; i++) {
-      const randomIndex = Math.floor(Math.random() * charset.length);
-      generatedPassword += charset.charAt(randomIndex);
-    }
-
+    const generatedPassword = generateRandomString(8);
     setPassword(generatedPassword);
-  }, [length, numberAllowed, characterAllowed]);
 
-  const calculatePasswordStrength = useCallback(() => {
-    let score = 0;
-    if (password.length >= 6) score++;
-    if (/[A-Z]/.test(password)) score++;
-    if (/[a-z]/.test(password)) score++;
-    if (/\d/.test(password)) score++;
-    if (/[!@#$%^&*()]/.test(password)) score++;
+    const pass = generateRandomString(length);
+    setPassword(pass);
+    setButtonText("Copy");
 
-    return score;
+    const strength = calculatePasswordStrength(pass);
+    setPasswordStrength(strength);
+  }, [length, numberAllowed, characterAllowed, setPassword]);
+
+  const copyPasswordToClipboard = useCallback(() => {
+    if (passwordRef.current) {
+      passwordRef.current.select();
+      passwordRef.current.setSelectionRange(0, 99999);
+      window.navigator.clipboard.writeText(password);
+      setButtonText("Copied !");
+    }
   }, [password]);
 
-  const getStrengthText = useCallback((strength) => {
-    if (strength === 0) return 'Weak';
-    if (strength === 1) return 'Fair';
-    if (strength === 2) return 'Good';
-    if (strength === 3) return 'Strong';
-    if (strength === 4) return 'Very Strong';
-    return '';
-  }, []);
+  const calculatePasswordStrength = (password) => {
+    const result = zxcvbn(password);
+    return {
+      score: result.score,
+      feedback: result.feedback.suggestions,
+    };
+  };
+
+  const getStrengthText = (score) => {
+    if (score === 0) {
+      return "Very Weak";
+    } else if (score === 1) {
+      return "Weak";
+    } else if (score === 2) {
+      return "Medium";
+    } else if (score === 3) {
+      return "Strong";
+    } else {
+      return "Very Strong";
+    }
+  };
 
   useEffect(() => {
-    calculatePasswordStrength();
-  }, [password, calculatePasswordStrength]);
-
-  useEffect(() => {
-    setPasswordStrength(calculatePasswordStrength());
-  }, [passwordStrength, calculatePasswordStrength]);
+    generatePassword();
+  }, [generatePassword]);
 
   return (
     <>
-      <PasswordGenerator
-        length={length}
-        setLength={setLength}
-        numberAllowed={numberAllowed}
-        setNumberAllowed={setNumberAllowed}
-        characterAllowed={characterAllowed}
-        setCharacterAllowed={setCharacterAllowed}
-        generatePassword={generatePassword}
-      />
-      <PasswordStrengthIndicator passwordStrength={passwordStrength} />
-      <div className="text-center mt-4">
-        <p>Generated Password: {password}</p>
+      <div className="h-screen dark:bg-slate-800 max-h-md dark:text-white fonts-poppins flex justify-center items-center flex-col py-8 content-center">
+        <div className="w-full max-w-md mx-auto shadow-md rounded-lg px-5 py-7 text-cyan-500 ">
+          <input
+            type="text"
+            value={password}
+            placeholder="Password"
+            readOnly={true}
+            className="w-full border-2 border-cyan-500 py-4 px-4 shrink-0 rounded-md focus:outline-none focus:ring focus:ring-cyan-300 ease-out duration-300"
+            ref={passwordRef}
+          />
+          <div className="mt-4">
+            <PasswordStrengthMeter passwordStrength={passwordStrength} />
+            <ul className="mt-2">
+              {passwordStrength.feedback.map((message, index) => (
+                <li key={index}>{message}</li>
+              ))}
+            </ul>
+          </div>
+        </div>
+        <CopyToClipboardButton
+          copyPasswordToClipboard={copyPasswordToClipboard}
+          buttonText={buttonText}
+        />
+        <RandomizeButton generatePassword={generatePassword} />
+        <div className='flex text-sm gap-x-2'>
+          <div className='flex items-center gap-x-1'>
+            <input
+              type='range'
+              className='slider appearance-none w-full h-2 bg-cyan-200 rounded-lg outline-none opacity-75 active:opacity-100 focus:opacity-100 border-cyan-500  '
+              min={6}
+              max={100}
+              value={length}
+              onChange={(e) => setLength(e.target.value)}
+            />
+            <label htmlFor='length'>Length: {length}</label>
+          </div>
+          
+          <div className='flex items-center gap-x-1'>
+            <input
+              className='form-checkbox h-5 w-5 text-cyan-500 transition duration-150 ease-in-out rounded-md focus:ring-cyan-500'
+              type='checkbox'
+              defaultChecked={numberAllowed}
+              onChange={() => {
+                setNumberAllowed((prev) => !prev);
+              }}
+              id='numberInput'
+            />
+            <label htmlFor='numberInput'>Numbers</label>
+          </div>
+          <div className='flex items-center gap-x-1'>
+            <input
+              className='form-checkbox h-5 w-5 text-cyan-500 transition duration-150 ease-in-out rounded-md focus:ring-cyan-500'
+              type='checkbox'
+              defaultChecked={characterAllowed}
+              id='characterInput'
+              onChange={() => {
+                setCharacterAllowed((prev) => !prev);
+              }}
+            />
+            <label htmlFor='characterInput'>Characters</label>
+          </div>
+        </div>
       </div>
     </>
   );
