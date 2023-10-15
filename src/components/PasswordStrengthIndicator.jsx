@@ -1,49 +1,31 @@
-import React from "react";
-import zxcvbn from "zxcvbn";
+import React, { useCallback } from 'react';
 
-function PasswordStrengthIndicator({ password }) {
-  const calculatePasswordStrength = (password) => {
-    const result = zxcvbn(password);
-    return {
-      score: result.score,
-      feedback: result.feedback.suggestions,
-    };
-  };
-
-  const getStrengthText = (score) => {
-    if (score === 0) {
-      return "Very Weak";
-    } else if (score === 1) {
-      return "Weak";
-    } else if (score === 2) {
-      return "Medium";
-    } else if (score === 3) {
-      return "Strong";
-    } else {
-      return "Very Strong";
-    }
-  };
-
-if (password) {
-    const passwordStrength = calculatePasswordStrength(password);
-
+function PasswordStrengthIndicator({ passwordStrength }) {
+  const getStrengthText = useCallback((strength) => {
+    if (strength === 0) return 'Weak';
+    if (strength === 1) return 'Fair';
+    if (strength === 2) return 'Good';
+    if (strength === 3) return 'Strong';
+    if (strength === 4) return 'Very Strong';
+    return '';
+  }, []);
 
   return (
-    <div className="mt-4">
-      <p className="text-lg font-semibold text-cyan-600">
-        Password Strength: {getStrengthText(passwordStrength.score)}
-      </p>
-      <ul className="mt-2">
-        {passwordStrength.feedback.map((message, index) => (
-          <li key={index} className="text-red-500">
-            {message}
-          </li>
-        ))}
-      </ul>
+    <div className="text-center">
+      <p>Password Strength: {getStrengthText(passwordStrength)}</p>
+      <div className="bg-cyan-300 h-2 rounded-full mt-2">
+        <div
+          className={`h-2 rounded-full ${
+            passwordStrength === 0
+              ? 'bg-red-500'
+              : passwordStrength === 1
+              ? 'bg-yellow-500'
+              : 'bg-green-500'
+          }`}
+        ></div>
+      </div>
     </div>
-  );} else {
-    return <div className="mt-4">Generating Password...</div>
-  }
+  );
 }
 
 export default PasswordStrengthIndicator;
