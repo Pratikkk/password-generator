@@ -1,5 +1,15 @@
+<<<<<<< HEAD
 import { useState, useRef, useEffect, useCallback } from "react";
 import zxcvbn from "zxcvbn";
+=======
+import React, { useState, useRef, useEffect, useCallback } from "react";
+import  zxcvbn  from "zxcvbn";
+
+import PasswordGenerator from "./components/PasswordGenerator";
+import PasswordStrengthMeter from "./components/PasswordStrengthMeter";
+import CopyToClipboardButton from "./components/CopyToClipboardButton";
+import RandomizeButton from "./components/RandomizeButton";
+>>>>>>> components-testing
 
 function App() {
   const [length, setLength] = useState(8);
@@ -17,20 +27,25 @@ function App() {
   const generatePassword = useCallback(() => {
     const generateRandomString = (length) => {
       let result = "";
-      let characters =
-        "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+      let characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
       if (numberAllowed) characters += "0123456789";
       if (characterAllowed) characters += "!@#$%^&*()_+";
       let charactersLength = characters.length;
       for (let i = 0; i < length; i++) {
+<<<<<<< HEAD
         result += characters.charAt(
           Math.floor(Math.random() * charactersLength),
         );
+=======
+        result += characters.charAt(Math.floor(Math.random() * charactersLength));
+>>>>>>> components-testing
       }
       return result;
     };
+
     const generatedPassword = generateRandomString(8);
     setPassword(generatedPassword);
+
     const pass = generateRandomString(length);
     setPassword(pass);
     setButtonText("Copy");
@@ -55,6 +70,7 @@ function App() {
       feedback: result.feedback.suggestions,
     };
   };
+
   const getStrengthText = (score) => {
     if (score === 0) {
       return "Very Weak";
@@ -86,9 +102,13 @@ function App() {
             ref={passwordRef}
           />
           <div className="mt-4">
+<<<<<<< HEAD
             <p className="text-lg font-semibold text-cyan-600">
               Password Strength: {getStrengthText(passwordStrength.score)}
             </p>
+=======
+            <PasswordStrengthMeter passwordStrength={passwordStrength} />
+>>>>>>> components-testing
             <ul className="mt-2">
               {passwordStrength.feedback.map((message, index) => (
                 <li key={index}>{message}</li>
@@ -96,6 +116,7 @@ function App() {
             </ul>
           </div>
         </div>
+<<<<<<< HEAD
         <button
           onClick={copyPasswordToClipboard}
           className="px-7 py-4 bg-cyan-500 text-white shrink-0 my-4 rounded-md hover:bg-cyan-700 hover:scale-150 active:bg-cyan-700 focus:outline-none focus:ring focus:ring-cyan-300 ease-out duration-300"
@@ -110,6 +131,15 @@ function App() {
         </button>
         <div className="flex text-sm gap-x-2">
           <div className="flex items-center gap-x-1">
+=======
+        <CopyToClipboardButton
+          copyPasswordToClipboard={copyPasswordToClipboard}
+          buttonText={buttonText}
+        />
+        <RandomizeButton generatePassword={generatePassword} />
+        <div className='flex text-sm gap-x-2'>
+          <div className='flex items-center gap-x-1'>
+>>>>>>> components-testing
             <input
               type="range"
               className="slider appearance-none w-full h-2 bg-cyan-200 rounded-lg outline-none opacity-75 active:opacity-100 focus:opacity-100 border-cyan-500  "
