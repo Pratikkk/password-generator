@@ -5,12 +5,12 @@ function App() {
   const [numberAllowed, setNumberAllowed] = useState(0);
   const [characterAllowed, setCharacterAllowed] = useState(false);
   const [password, setPassword] = useState("");
+  const [buttonText, setButtonText] = useState("Copy");
 
-const passwordRef = useRef(null)
+  const passwordRef = useRef(null);
 
   const passwordGenerator = useCallback(() => {
-    let str =
-      "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+    let str = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
     let pass = "";
     if (numberAllowed) str += "0123456789";
     if (characterAllowed) str += "!@#$%^&*()_+";
@@ -18,13 +18,15 @@ const passwordRef = useRef(null)
       pass += str.charAt(Math.floor(Math.random() * str.length));
     }
     setPassword(pass);
+    setButtonText("Copy");
   }, [length, numberAllowed, characterAllowed, setPassword]);
 
-   const copyPasswordToClipboard = useCallback(() => {
-     passwordRef.current?.select();
-     passwordRef.current?.setSelectionRange(0, 99999);
-     window.navigator.clipboard.writeText(password)
-   }, [password])
+  const copyPasswordToClipboard = useCallback(() => {
+    passwordRef.current?.select();
+    passwordRef.current?.setSelectionRange(0, 99999);
+    window.navigator.clipboard.writeText(password);
+    setButtonText("Copied !");
+  }, [password]);
 
   useEffect(() => {
     passwordGenerator();
@@ -43,14 +45,17 @@ const passwordRef = useRef(null)
             ref={passwordRef}
           />
         </div>
-        <button onClick={copyPasswordToClipboard} className='px-4 py-2 bg-cyan-500 text-white shrink-0 my-4 rounded-md hover:bg-cyan-700 hover:scale-150 active:bg-cyan-700 focus:outline-none focus:ring focus:ring-cyan-300 ease-out duration-300'>
-          Copy
+        <button
+          onClick={copyPasswordToClipboard}
+          className='px-4 py-2 bg-cyan-500 text-white shrink-0 my-4 rounded-md hover:bg-cyan-700 hover:scale-150 active:bg-cyan-700 focus:outline-none focus:ring focus:ring-cyan-300 ease-out duration-300'
+        >
+          {buttonText}
         </button>
         <div className='flex text-sm gap-x-2'>
           <div className='flex items-center gap-x-1'>
             <input
               type='range'
-              className="slider appearance-none w-full h-2 bg-cyan-200 rounded-lg outline-none opacity-75 active:opacity-100 focus:opacity-100"
+              className='slider appearance-none w-full h-2 bg-cyan-200 rounded-lg outline-none opacity-75 active:opacity-100 focus:opacity-100 border-cyan-500  '
               min={6}
               max={100}
               value={length}
@@ -60,7 +65,7 @@ const passwordRef = useRef(null)
           </div>
           <div className='flex items-center gap-x-1'>
             <input
-            className="form-checkbox h-5 w-5 text-cyan-500 transition duration-150 ease-in-out rounded-md focus:ring-cyan-500"
+              className='form-checkbox h-5 w-5 text-cyan-500 transition duration-150 ease-in-out rounded-md focus:ring-cyan-500'
               type='checkbox'
               defaultChecked={numberAllowed}
               onChange={() => {
@@ -72,7 +77,7 @@ const passwordRef = useRef(null)
           </div>
           <div className='flex items-center gap-x-1'>
             <input
-            className="form-checkbox h-5 w-5 text-cyan-500 transition duration-150 ease-in-out rounded-md focus:ring-cyan-500"
+              className='form-checkbox h-5 w-5 text-cyan-500 transition duration-150 ease-in-out rounded-md focus:ring-cyan-500'
               type='checkbox'
               defaultChecked={characterAllowed}
               id='characterInput'
